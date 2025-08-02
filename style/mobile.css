@@ -1,0 +1,28 @@
+@media screen and (max-width: 450px) {
+    header {
+        padding: 30px 20px;
+        margin-bottom: 20px;
+    }
+    header img {
+        width: 70px;
+    }
+
+    .hero-section {
+        height: fit-content;
+    }
+    .hero-section h1 {
+        font-size: 20px;
+    }
+    .hero-section .converter-container {
+        width: 90%;
+        padding: 20px;
+    }
+    .hero-section .conversion-box {
+        width: 100%;
+        max-width: 100%;
+    }
+    .hero-section .dropdown-list li {
+        padding: 10px;
+        font-size: 12px;
+    }
+}
