@@ -1,9 +1,11 @@
+// Save new conversions to localstorage
 export function saveToHistory(entry) {
   const history = JSON.parse(localStorage.getItem('conversionHistory')) || [];
   history.unshift(entry);
   localStorage.setItem('conversionHistory', JSON.stringify(history.slice(0, 10)));
 }
 
+// Load history from localstorage 
 export function loadHistory() {
   const history = JSON.parse(localStorage.getItem('conversionHistory')) || [];
   const list = document.querySelector('.conversion-history');

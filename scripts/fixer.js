@@ -1,11 +1,13 @@
 const FIXER_API_KEY = '41ce3f90ef2ff43bb4bf43fdd9639264'; 
 const BASE_URL = 'https://data.fixer.io/api';
 
+// Get country flag url from currency code (taking just the first 2 letters)
 function getCountryFlagFromCurrency(code) {
   const isoCode = code.slice(0, 2).toLowerCase(); 
   return `https://flagcdn.com/24x18/${isoCode}.png`;
 }
 
+// Fetch local currency names/symbols from currencyNames json file
 async function fetchLocalCurrencyData() {
     try {
         const res = await fetch('/data/currencyNames.json');
@@ -18,6 +20,7 @@ async function fetchLocalCurrencyData() {
     }
 }
 
+// Fetch currency symbols from Fixer API and merge with local data & flags
 async function fetchCurrencySymbols() {
     try {
         const res = await fetch(`${BASE_URL}/symbols?access_key=${FIXER_API_KEY}`);
@@ -31,7 +34,6 @@ async function fetchCurrencySymbols() {
         for (const code in fixerSymbols) {
         merged[code] = {
             name: localData[code] || fixerSymbols[code],
-            symbol: '', // Optional: add from local if needed
             flag: `<img src="${getCountryFlagFromCurrency(code)}" alt="${code} flag" width="24" height="18">`
         };
         }
@@ -43,6 +45,7 @@ async function fetchCurrencySymbols() {
     }
 }
 
+// Fetch conversion rate between two currencies using Fixer API latest rates
 async function fetchConversionRate(from, to) {
     try {
         const res = await fetch(`${BASE_URL}/latest?access_key=${FIXER_API_KEY}`);
@@ -60,6 +63,7 @@ async function fetchConversionRate(from, to) {
     }
 }
 
+// Fetch all latest rates with optional base currency 
 async function fetchRatesList(base = 'USD') {
     try {
         const res = await fetch(`${BASE_URL}/latest?access_key=${FIXER_API_KEY}&base=${base}`);
