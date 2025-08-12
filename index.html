@@ -16,6 +16,7 @@
     <script src="./scripts/themeToggle.js" defer></script>
     <script src="./scripts/history.js" defer></script>
     <script type="module" src="./scripts/converterUI.js" defer></script>
+    <script src="./scripts/news.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://kit.fontawesome.com/c21cfe5a09.js" crossorigin="anonymous"></script>
@@ -75,10 +76,27 @@
                 </div>
             </div>
         </section>
-        <!-- Chart Section -->
-        <section class="chart-section">
-
+        <!-- News Section -->
+        <section class="news-section">
+            <h2>Currency News</h2>
+            <p id="news-last-updated" class="last-updated"></p>
+            <div id="news-container" class="news-container">
+                <p>Loading latest currency news...</p>
+            </div>
         </section>
     </main>
+    <footer>
+        <div class="footer-content">
+            <p>&copy; <span id="year"></span> Kmini Converter. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>

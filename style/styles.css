@@ -122,7 +122,8 @@ header .dropdown-wrapper.open .conversion-history {
 }
 
 .hero-section {
-    height: 80dvh;
+    padding: 30px;
+    height: fit-content;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -271,4 +272,114 @@ header .dropdown-wrapper.open .conversion-history {
 #swap-btn:hover {
     background: var(--p-background);
     color: var(--white);
+}
+
+/* News Section */
+main .news-section {
+    padding: 30px;
+    background-color: var(--white);
+    border-radius: 8px;
+    border: 1px solid var(--ash);
+    margin-top: 40px;
+}
+main .news-section h2 {
+    font-family: "Figtree", sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--p-background);
+    text-align: center;
+}
+main .news-section > p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: var(--p-background);
+    text-align: center;
+}
+main .news-section .news-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+main .news-section .news-item {
+    background-color: var(--beige);
+    border: 1px solid var(--ash);
+    border-radius: 6px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+main .news-section .news-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+}
+main .news-section .news-item h3 {
+    font-size: 18px;
+    font-weight: 600;
+    font-family: "Montserrat", sans-serif;
+    color: var(--black);
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+main .news-section .news-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+main .news-section .news-item p {
+    font-size: 14px;
+    font-weight: 400;
+    font-family: "Montserrat", sans-serif;
+    color: var(--s-background);
+    margin-bottom: 10px;
+}
+main .news-section .news-item small {
+    font-size: 12px;
+    color: var(--ash);
+}
+main .news-section .news-item a {
+    text-decoration: none;
+    color: inherit;
+}
+main .news-section .news-item a:hover h3 {
+    color: var(--highlight);
+}
+
+
+/* Footer */
+footer {
+    background-color: var(--p-background);
+    padding: 20px;
+    text-align: center;
+    color: var(--white);
+    font-family: "Montserrat", sans-serif;
+    border-top: 1px solid var(--ash);
+}
+
+footer .footer-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+footer .footer-links {
+    display: flex;
+    gap: 20px;
+}
+
+footer .footer-links a {
+    color: var(--highlight);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+footer .footer-links a:hover {
+    text-decoration: underline;
 }

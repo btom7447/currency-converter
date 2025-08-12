@@ -60,4 +60,18 @@ async function fetchConversionRate(from, to) {
     }
 }
 
-export { fetchCurrencySymbols, fetchConversionRate };
+async function fetchRatesList(base = 'USD') {
+    try {
+        const res = await fetch(`${BASE_URL}/latest?access_key=${FIXER_API_KEY}&base=${base}`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error?.info || 'Failed to fetch rates list.');
+
+        return data.rates; // object with currency codes and rates
+    } catch (err) {
+        console.error('Rates List Fetch Error:', err);
+        alert('Unable to load rates list.');
+        return {};
+    }
+}
+
+export { fetchCurrencySymbols, fetchConversionRate, fetchRatesList };

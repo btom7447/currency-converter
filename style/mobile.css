@@ -9,6 +9,7 @@
 
     .hero-section {
         height: fit-content;
+        padding: 0;
     }
     .hero-section h1 {
         font-size: 20px;

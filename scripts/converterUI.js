@@ -71,6 +71,7 @@ function setupDropdownToggle(dropdown, list) {
     document.addEventListener('click', (e) => {
         if (!dropdown.contains(e.target)) list.classList.remove('show');
     });
+    
 }
 
 // 🧮 Format input while typing
