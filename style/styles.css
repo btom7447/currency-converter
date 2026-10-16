@@ -117,6 +117,19 @@ header .conversion-history li.empty {
     text-align: center;
     color: #888;
 }
+header .conversion-history li.clear-history {
+    justify-content: center;
+}
+header .clear-history-btn {
+    background: none;
+    border: none;
+    color: #888;
+    font: inherit;
+    cursor: pointer;
+}
+header .clear-history-btn:hover {
+    color: var(--black);
+}
 header .dropdown-wrapper.open .conversion-history {
     display: block;
 }
@@ -269,7 +282,11 @@ header .dropdown-wrapper.open .conversion-history {
 #swap-btn i {
     line-height: 1;
 }
-#swap-btn:hover {
+body.dark #swap-btn {
+    color: #000;
+}
+#swap-btn:hover,
+body.dark #swap-btn:hover {
     background: var(--p-background);
     color: var(--white);
 }
