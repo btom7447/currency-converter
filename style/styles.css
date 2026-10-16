@@ -282,7 +282,11 @@ header .dropdown-wrapper.open .conversion-history {
 #swap-btn i {
     line-height: 1;
 }
-#swap-btn:hover {
+body.dark #swap-btn {
+    color: #000;
+}
+#swap-btn:hover,
+body.dark #swap-btn:hover {
     background: var(--p-background);
     color: var(--white);
 }
