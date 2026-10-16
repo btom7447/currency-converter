@@ -35,10 +35,10 @@ function selectCurrency(side, code) {
 function createDropdownItems(button, list, side) {
   list.innerHTML = '';
 
-  Object.entries(currencyData).forEach(([code, { name, flag }]) => {
+  Object.entries(currencyData).forEach(([code, { name, flag, country }]) => {
     const li = document.createElement('li');
     li.setAttribute('role', 'option');
-    li.innerHTML = `${flag} ${code} - ${name}`;
+    li.innerHTML = `${flag} ${code} - ${name}${country ? ` (${country})` : ''}`;
     li.addEventListener('click', () => {
       selectCurrency(side, code);
       list.classList.remove('show');

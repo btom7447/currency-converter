@@ -1,6 +1,8 @@
 // Exchange-rate access layer.
 // Primary source: Fixer (only if the user supplies a key at runtime, never committed).
 // Fallback source: open.er-api.com (free, no key). Last resort: rates cached in localStorage.
+import { getFlagUrl, getCountryName } from '../data/currency-to-country.js';
+
 const FIXER_URL = 'https://data.fixer.io/api';
 const FALLBACK_URL = 'https://open.er-api.com/v6/latest';
 const CACHE_KEY = 'exchangeRatesCache';
@@ -16,10 +18,10 @@ function getApiKey() {
     }
 }
 
-// Get country flag url from currency code (taking just the first 2 letters)
-function getCountryFlagFromCurrency(code) {
-  const isoCode = code.slice(0, 2).toLowerCase();
-  return `https://flagcdn.com/24x18/${isoCode}.png`;
+// Flag <img> markup for a currency; empty when its country is unknown
+function flagHtml(code) {
+    const url = getFlagUrl(code);
+    return url ? `<img src="${url}" alt="${getCountryName(code)} flag" width="24" height="18">` : '';
 }
 
 // Fetch local currency names from currency.json
@@ -99,7 +101,8 @@ async function fetchCurrencySymbols() {
     for (const code in rates) {
         merged[code] = {
             name: localData[code] || code,
-            flag: `<img src="${getCountryFlagFromCurrency(code)}" alt="${code} flag" width="24" height="18">`
+            country: getCountryName(code),
+            flag: flagHtml(code)
         };
     }
     return merged;
@@ -117,4 +120,4 @@ async function fetchRatesList(base = 'USD') {
     return rebase(await getLatestRates(), base);
 }
 
-export { fetchCurrencySymbols, fetchConversionRate, fetchRatesList, getLatestRates, rebase };
+export { flagHtml, fetchCurrencySymbols, fetchConversionRate, fetchRatesList, getLatestRates, rebase };
