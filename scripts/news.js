@@ -1,97 +1,130 @@
-const API_KEY = "f0a71d0179895ff66069780d96f686b4";
-const API_URL = `https://gnews.io/api/v4/search?q=forex%20OR%20currency&lang=en&max=5&apikey=${API_KEY}`;
+// Currency news from GNews (free tier). The API key is never committed: supply it at runtime via
+// window.GNEWS_API_KEY or localStorage 'gnewsApiKey'. Without a key the section shows a notice.
+const API_BASE = 'https://gnews.io/api/v4/search?q=forex%20OR%20currency&lang=en&max=5';
+const CACHE_KEY = 'currencyNews';
+const CACHE_TIME = 60 * 60 * 1000; // 1 hour caching
+const LAST_UPDATED_ID = 'news-last-updated';
+const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
-const CACHE_KEY = "currencyNews";
-const CACHE_TIME = 60 * 60 * 1000; // 1 hour Caching
-const LAST_UPDATED_ID = "news-last-updated";
+function escapeHtml(text) {
+  return String(text ?? '').replace(/[&<>"']/g, ch => HTML_ESCAPES[ch]);
+}
 
-// Fetch Currency news (with optional forced refresh)
-async function fetchCurrencyNews(forceRefresh = false) {
-  const container = document.getElementById("news-container");
-  const lastUpdatedEl = document.getElementById(LAST_UPDATED_ID);
+// Only allow http(s) links/images so API data cannot inject javascript: URLs
+function safeUrl(url) {
+  try {
+    const u = new URL(url);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : '';
+  } catch {
+    return '';
+  }
+}
 
-  const cached = localStorage.getItem(CACHE_KEY);
-  if (cached && !forceRefresh) {
-    const { articles, timestamp } = JSON.parse(cached);
-    const now = Date.now();
-    if (now - timestamp < CACHE_TIME) {
-      renderNews(articles);
-      updateLastUpdated(timestamp);
-      console.log("Showing cached currency news");
-      return;
-    }
+export function getApiKey() {
+  if (typeof window !== 'undefined' && window.GNEWS_API_KEY) return window.GNEWS_API_KEY;
+  try {
+    return localStorage.getItem('gnewsApiKey') || '';
+  } catch {
+    return '';
+  }
+}
+
+// Read cached news; corrupt data is ignored
+export function readCache(storage = globalThis.localStorage) {
+  try {
+    const parsed = JSON.parse(storage.getItem(CACHE_KEY));
+    if (parsed && Array.isArray(parsed.articles) && typeof parsed.timestamp === 'number') return parsed;
+  } catch { /* fall through */ }
+  return null;
+}
+
+// Build the markup for a list of articles (all API values escaped, unsafe links dropped)
+export function renderNewsHtml(articles) {
+  return articles
+    .filter(a => a && a.title && safeUrl(a.url))
+    .map(a => {
+      const image = safeUrl(a.image);
+      const date = a.publishedAt ? new Date(a.publishedAt) : null;
+      const dateText = date && !isNaN(date) ? date.toLocaleDateString() : '';
+      return `
+      <article class="news-item">
+        <a href="${escapeHtml(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer">
+          <h3>${escapeHtml(a.title)}</h3>
+          ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(a.title)}" />` : ''}
+          <p>${escapeHtml(a.description)}</p>
+          <small>${escapeHtml(dateText)}</small>
+        </a>
+      </article>`;
+    })
+    .join('');
+}
+
+// Fetch articles; throws on network, HTTP or API-reported errors
+export async function requestNews(apiKey, fetchFn = globalThis.fetch) {
+  const res = await fetchFn(`${API_BASE}&apikey=${encodeURIComponent(apiKey)}`);
+  if (!res.ok) throw new Error(`News request failed (${res.status})`);
+  const data = await res.json();
+  if (!data || !Array.isArray(data.articles)) throw new Error('Unexpected news response');
+  return data.articles;
+}
+
+function updateLastUpdated(timestamp) {
+  const el = document.getElementById(LAST_UPDATED_ID);
+  if (el) el.textContent = `Last updated: ${new Date(timestamp).toLocaleString()}`;
+}
+
+// Show cached articles (used when fresh data is unavailable)
+function showCached(container, cached) {
+  container.innerHTML = renderNewsHtml(cached.articles);
+  updateLastUpdated(cached.timestamp);
+}
+
+// Fetch Currency news (with optional forced refresh); falls back to stale cache on failure
+export async function fetchCurrencyNews(forceRefresh = false) {
+  const container = document.getElementById('news-container');
+  if (!container) return;
+
+  const cached = readCache();
+  if (cached && !forceRefresh && Date.now() - cached.timestamp < CACHE_TIME) {
+    showCached(container, cached);
+    return;
   }
 
-  // Loading fallback if no cache news 
-  if (!cached) {
-    container.innerHTML = `<p>Loading latest currency news...</p>`;
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    if (cached) showCached(container, cached);
+    else container.innerHTML = '<p>News is unavailable: no GNews API key configured.</p>';
+    return;
   }
+
+  if (!cached) container.innerHTML = '<p>Loading latest currency news...</p>';
 
   try {
-    // Fetch data from API
-    const res = await fetch(API_URL);
-    const data = await res.json();
-
-    // Fallback if no data found from API
-    if (!data.articles || data.articles.length === 0) {
-      container.innerHTML = `<p>No recent currency news found.</p>`;
-      updateLastUpdated(Date.now());
+    const articles = await requestNews(apiKey);
+    const timestamp = Date.now();
+    if (articles.length === 0) {
+      container.innerHTML = '<p>No recent currency news found.</p>';
+      updateLastUpdated(timestamp);
       return;
     }
-
-    // Cache fetched dataa
-    localStorage.setItem(
-      CACHE_KEY,
-      JSON.stringify({
-        articles: data.articles,
-        timestamp: Date.now(),
-      })
-    );
-
-    // Render to news section
-    renderNews(data.articles);
-    updateLastUpdated(Date.now());
-    console.log("Fetched fresh currency news");
-  } catch (err) {
-    console.error("Error fetching news:", err);
-    if (!cached) {
-      container.innerHTML = `<p>Error loading news. Please try again later.</p>`;
-      updateLastUpdated(Date.now());
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ articles, timestamp }));
+    } catch (err) {
+      console.error('Could not cache news', err);
     }
-  }
-}
-
-// Display news article 
-function renderNews(articles) {
-  const container = document.getElementById("news-container");
-  container.innerHTML = articles
-  .map(
-    (article) => `
-      <article class="news-item">
-        <a href="${article.url}" target="_blank" rel="noopener">
-          <h3>${article.title}</h3>
-          ${article.image ? `<img src="${article.image}" alt="${article.title}" />` : ""}
-          <p>${article.description || ""}</p>
-          <small>${new Date(article.publishedAt).toLocaleDateString()}</small>
-        </a>
-      </article>
-    `
-  )
-  .join("");
-}
-
-// Update "Last updated" text
-function updateLastUpdated(timestamp) {
-  const lastUpdatedEl = document.getElementById(LAST_UPDATED_ID);
-  if (lastUpdatedEl) {
-    lastUpdatedEl.textContent = `Last updated: ${new Date(timestamp).toLocaleString()}`;
+    container.innerHTML = renderNewsHtml(articles);
+    updateLastUpdated(timestamp);
+  } catch (err) {
+    console.error('Error fetching news:', err);
+    if (cached) showCached(container, cached);
+    else container.innerHTML = '<p>Error loading news. Please try again later.</p>';
   }
 }
 
 // On page load: fetch news & set auto-refresh
-document.addEventListener("DOMContentLoaded", () => {
-  fetchCurrencyNews();
-  setInterval(() => {
-    fetchCurrencyNews(true);
-  }, CACHE_TIME);
-});
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchCurrencyNews();
+    setInterval(() => fetchCurrencyNews(true), CACHE_TIME);
+  });
+}
