@@ -55,7 +55,14 @@ async function calculateConversion() {
   const amount = parseFloat(raw);
   if (!selectedFrom || !selectedTo || isNaN(amount)) return;
 
-  const rate = await fetchConversionRate(selectedFrom, selectedTo);
+  let rate;
+  try {
+    rate = await fetchConversionRate(selectedFrom, selectedTo);
+  } catch (err) {
+    console.error(err);
+    rateDisplay.textContent = err.message;
+    return;
+  }
   const result = amount * rate;
   toInput.value = formatNumber(result.toFixed(2));
   const formatted = `${formatNumber(amount)} ${selectedFrom} <i class="fa-solid fa-chevron-right"></i> ${selectedTo}`;
@@ -103,7 +110,13 @@ function setupSwapButton() {
 
 //  Init
 async function init() {
-  currencyData = await fetchCurrencySymbols();
+  try {
+    currencyData = await fetchCurrencySymbols();
+  } catch (err) {
+    console.error(err);
+    rateDisplay.textContent = err.message;
+    return;
+  }
 
   createDropdownItems(fromDropdown, fromBtn, fromList, 'from');
   createDropdownItems(toDropdown, toBtn, toList, 'to');
