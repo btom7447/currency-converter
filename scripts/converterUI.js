@@ -74,8 +74,7 @@ async function calculateConversion(record = false) {
   toInput.value = formatResult(amount, rate);
   rateDisplay.textContent = `1 ${selectedFrom} = ${formatNumber(rate.toFixed(2))} ${selectedTo}`;
   if (record) {
-    const formatted = `${formatNumber(amount)} ${selectedFrom} <i class="fa-solid fa-chevron-right"></i> ${selectedTo}`;
-    saveToHistory(formatted);
+    saveToHistory({ amount: formatNumber(amount), from: selectedFrom, to: selectedTo });
     loadHistory();
   }
 }
